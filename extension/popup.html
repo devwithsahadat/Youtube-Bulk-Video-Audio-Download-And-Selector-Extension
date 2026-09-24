@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube Bulk Selector</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      width: 360px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #0f0f0f;
+      color: #f1f1f1;
+      padding: 16px;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #2a2a2a;
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .brand svg {
+      fill: #ff0033;
+    }
+    .title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .badge {
+      background: #ff0033;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+    .stats-card {
+      background: #1a1a1a;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 14px;
+      border: 1px solid #2d2d2d;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .stats-label {
+      font-size: 12px;
+      color: #aaa;
+    }
+    .stats-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: #4ade80;
+    }
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .btn {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #ff0033, #d90429);
+      color: #fff;
+      box-shadow: 0 4px 10px rgba(255, 0, 51, 0.3);
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #e6002e, #bf0424);
+    }
+    .btn-primary.copied {
+      background: #00b894;
+    }
+    .btn-danger {
+      background: #252525;
+      color: #ef4444;
+      border: 1px solid #333;
+    }
+    .btn-danger:hover {
+      background: #ef4444;
+      color: #fff;
+    }
+    .help-box {
+      margin-top: 14px;
+      padding: 10px;
+      background: #141414;
+      border-radius: 6px;
+      font-size: 11px;
+      color: #888;
+      line-height: 1.4;
+      border-left: 3px solid #ff0033;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="brand">
+      <svg width="22" height="22" viewBox="0 0 24 24">
+        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+      </svg>
+      <span class="title">YT Bulk Selector</span>
+    </div>
+    <span class="badge" id="popup-count-badge">0</span>
+  </div>
+
+  <div class="stats-card">
+    <span class="stats-label">Total Selected Videos:</span>
+    <span class="stats-value" id="popup-selected-count">0</span>
+  </div>
+
+  <div class="btn-group">
+    <button class="btn btn-primary" id="popup-copy-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+      </svg>
+      <span>Copy All Selected Links</span>
+    </button>
+    <button class="btn btn-danger" id="popup-clear-btn">
+      <span>✕ Clear Selected List</span>
+    </button>
+  </div>
+
+  <div class="help-box">
+    💡 <strong>How to use:</strong> Open YouTube, search for any topic, select video checkboxes or use the bottom-right button to view selections, then copy all links to paste in your Downloader script.
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

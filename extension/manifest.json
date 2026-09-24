@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube Video Bulk Selector & Link Collector",
+  "version": "1.0.0",
+  "description": "Select YouTube videos easily from search and feed, manage them in a right-side panel, and copy all links with one click.",
+  "permissions": [
+    "storage",
+    "clipboardWrite"
+  ],
+  "host_permissions": [
+    "*://*.youtube.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "YouTube Bulk Selector"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.youtube.com/*"
+      ],
+      "css": [
+        "content.css"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_end"
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
