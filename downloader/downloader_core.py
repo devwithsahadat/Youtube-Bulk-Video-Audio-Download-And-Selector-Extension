@@ -10,12 +10,14 @@ from typing import Dict, List, Optional, Callable, Any
 import yt_dlp
 
 class DownloadTask:
-    def __init__(self, task_id: str, url: str, format_type: str, quality: str, output_folder: str):
+    def __init__(self, task_id: str, url: str, format_type: str, quality: str, output_folder: str, browser_cookies: str = "none", cookie_file: Optional[str] = None):
         self.id: str = task_id
         self.url: str = url
         self.format_type: str = format_type  # 'video' or 'audio'
         self.quality: str = quality          # 'best', '1080p', '720p', '480p', '320k', etc.
         self.output_folder: str = output_folder
+        self.browser_cookies: str = browser_cookies  # 'none', 'chrome', 'edge', 'firefox', 'brave', 'opera'
+        self.cookie_file: Optional[str] = cookie_file
         self.title: str = "Fetching info..."
         self.thumbnail: str = ""
         self.status: str = "queued"          # 'queued', 'downloading', 'processing', 'completed', 'error'
@@ -35,6 +37,7 @@ class DownloadTask:
             "format_type": self.format_type,
             "quality": self.quality,
             "output_folder": self.output_folder,
+            "browser_cookies": self.browser_cookies,
             "title": self.title,
             "thumbnail": self.thumbnail,
             "status": self.status,
@@ -64,14 +67,14 @@ class DownloadManager:
         for cb in self.notify_callbacks:
             try:
                 cb(data)
-            except Exception as e:
+            except Exception:
                 pass
 
     def get_all_tasks(self) -> List[Dict[str, Any]]:
         with self._lock:
             return [task.to_dict() for task in self.tasks.values()]
 
-    def add_batch(self, urls: List[str], format_type: str, quality: str, output_folder: str) -> List[str]:
+    def add_batch(self, urls: List[str], format_type: str, quality: str, output_folder: str, browser_cookies: str = "none", cookie_file: Optional[str] = None) -> List[str]:
         task_ids = []
         os.makedirs(output_folder, exist_ok=True)
 
@@ -81,7 +84,15 @@ class DownloadManager:
                 continue
             
             task_id = str(uuid.uuid4())[:8]
-            task = DownloadTask(task_id, url, format_type, quality, output_folder)
+            task = DownloadTask(
+                task_id=task_id,
+                url=url,
+                format_type=format_type,
+                quality=quality,
+                output_folder=output_folder,
+                browser_cookies=browser_cookies,
+                cookie_file=cookie_file
+            )
             
             with self._lock:
                 self.tasks[task_id] = task
@@ -146,7 +157,31 @@ class DownloadManager:
                 'nocheckcertificate': True,
                 'ignoreerrors': False,
                 'retries': 5,
+                # Mobile clients fallback to bypass bot check on RDP/datacenter IPs
+                'extractor_args': {
+                    'youtube': {
+                        'player_client': ['android', 'ios', 'web'],
+                        'player_skip': ['webpage', 'configs']
+                    }
+                },
+                'http_headers': {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+                }
             }
+
+            # Handle Cookies
+            # 1. Custom cookies.txt file
+            default_cookie_file = os.path.join(os.path.dirname(__file__), "cookies.txt")
+            if task.cookie_file and os.path.exists(task.cookie_file):
+                ydl_opts['cookiefile'] = task.cookie_file
+            elif os.path.exists(default_cookie_file):
+                ydl_opts['cookiefile'] = default_cookie_file
+            # 2. Browser cookies
+            elif task.browser_cookies and task.browser_cookies.lower() != "none":
+                try:
+                    ydl_opts['cookiesfrombrowser'] = (task.browser_cookies.lower(),)
+                except Exception as ce:
+                    print(f"Warning: Could not load cookies from browser '{task.browser_cookies}': {ce}")
 
             if task.format_type == 'audio':
                 ydl_opts.update({

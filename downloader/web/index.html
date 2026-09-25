@@ -78,6 +78,34 @@
             </select>
           </div>
 
+          <!-- Cookies / Anti-Bot Setting (For RDP / VPS) -->
+          <div class="config-item">
+            <label for="cookies-browser-select" class="label-title">
+              <span>🍪 Browser Cookies (For RDP/Anti-Bot)</span>
+            </label>
+            <select id="cookies-browser-select" class="custom-select">
+              <option value="none">Auto (Mobile Client Bypass)</option>
+              <option value="chrome">Google Chrome</option>
+              <option value="edge">Microsoft Edge</option>
+              <option value="firefox">Mozilla Firefox</option>
+              <option value="brave">Brave Browser</option>
+            </select>
+          </div>
+
+          <!-- Upload cookies.txt -->
+          <div class="config-item">
+            <label class="label-title">
+              <span>📄 cookies.txt File</span>
+              <span class="badge-subtle" id="cookie-file-status">Checking...</span>
+            </label>
+            <div class="file-upload-wrapper">
+              <input type="file" id="cookie-file-input" accept=".txt" style="display: none;">
+              <button class="btn btn-secondary btn-full" id="btn-upload-cookie">
+                <span>📤 Upload cookies.txt</span>
+              </button>
+            </div>
+          </div>
+
           <!-- Destination Folder Selection -->
           <div class="config-item folder-select-group">
             <label class="label-title">Destination Folder</label>

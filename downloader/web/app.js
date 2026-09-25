@@ -11,6 +11,10 @@ const linkCountBadge = document.getElementById('link-count-badge');
 const btnPasteClipboard = document.getElementById('btn-paste-clipboard');
 const formatButtons = document.querySelectorAll('#format-toggle .toggle-btn');
 const qualitySelect = document.getElementById('quality-select');
+const cookiesBrowserSelect = document.getElementById('cookies-browser-select');
+const cookieFileStatus = document.getElementById('cookie-file-status');
+const cookieFileInput = document.getElementById('cookie-file-input');
+const btnUploadCookie = document.getElementById('btn-upload-cookie');
 const folderPathInput = document.getElementById('folder-path-input');
 const btnBrowseFolder = document.getElementById('btn-browse-folder');
 const btnOpenFolder = document.getElementById('btn-open-folder');
@@ -30,9 +34,29 @@ const statusText = document.getElementById('status-text');
 document.addEventListener('DOMContentLoaded', () => {
   initWebSocket();
   loadDefaultFolder();
+  checkCookieStatus();
   setupEventListeners();
   updateLinkCount();
 });
+
+// Check if cookies.txt exists on server
+async function checkCookieStatus() {
+  try {
+    const res = await fetch('/api/cookie-status');
+    const data = await res.json();
+    if (data.has_cookie_file) {
+      cookieFileStatus.textContent = '✓ Active';
+      cookieFileStatus.className = 'badge-subtle active';
+      btnUploadCookie.innerHTML = '<span>✓ cookies.txt Loaded (Click to Replace)</span>';
+    } else {
+      cookieFileStatus.textContent = 'None';
+      cookieFileStatus.className = 'badge-subtle';
+      btnUploadCookie.innerHTML = '<span>📤 Upload cookies.txt</span>';
+    }
+  } catch (e) {
+    console.error('Cookie status check error:', e);
+  }
+}
 
 // Setup Listeners
 function setupEventListeners() {
@@ -64,6 +88,36 @@ function setupEventListeners() {
       currentFormat = btn.dataset.format;
       updateQualityOptions();
     });
+  });
+
+  // Cookie file upload
+  btnUploadCookie.addEventListener('click', () => {
+    cookieFileInput.click();
+  });
+
+  cookieFileInput.addEventListener('change', async () => {
+    const file = cookieFileInput.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    btnUploadCookie.innerText = 'Uploading...';
+    try {
+      const res = await fetch('/api/upload-cookies', {
+        method: 'POST',
+        body: formData
+      });
+      if (res.ok) {
+        alert('cookies.txt uploaded successfully!');
+        checkCookieStatus();
+      } else {
+        alert('Failed to upload cookies.txt');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error uploading cookie file');
+    }
   });
 
   // Browse folder
@@ -180,7 +234,8 @@ async function startDownload() {
         urls: urls,
         format_type: currentFormat,
         quality: qualitySelect.value,
-        output_folder: currentFolder
+        output_folder: currentFolder,
+        browser_cookies: cookiesBrowserSelect ? cookiesBrowserSelect.value : "none"
       })
     });
 

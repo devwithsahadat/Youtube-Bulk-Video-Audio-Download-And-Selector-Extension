@@ -156,6 +156,26 @@ body {
   border: 1px solid rgba(255, 0, 51, 0.3);
 }
 
+.badge-subtle {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.07);
+  color: #94a3b8;
+  border: 1px solid var(--border-color);
+}
+
+.badge-subtle.active {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.btn-full {
+  width: 100%;
+}
+
 .btn-text {
   background: transparent;
   border: none;

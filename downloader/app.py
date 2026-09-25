@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import List, Optional
 from pydantic import BaseModel
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, UploadFile, File
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -31,6 +31,8 @@ manager = DownloadManager(max_concurrent=3)
 # Default download folder
 DEFAULT_DOWNLOAD_DIR = os.path.join(os.path.expanduser("~"), "Downloads", "YouTube_Downloads")
 os.makedirs(DEFAULT_DOWNLOAD_DIR, exist_ok=True)
+
+COOKIE_FILE_PATH = os.path.join(os.path.dirname(__file__), "cookies.txt")
 
 # Connected WebSocket clients
 active_websockets: List[WebSocket] = []
@@ -60,6 +62,7 @@ class DownloadRequest(BaseModel):
     format_type: str = "video"       # 'video' or 'audio'
     quality: str = "best"            # 'best', '1080p', '720p', '480p', '320k'
     output_folder: Optional[str] = None
+    browser_cookies: Optional[str] = "none" # 'none', 'chrome', 'edge', 'firefox', 'brave'
 
 
 class OpenFolderRequest(BaseModel):
@@ -69,6 +72,23 @@ class OpenFolderRequest(BaseModel):
 @app.get("/api/default-folder")
 def get_default_folder():
     return {"folder": DEFAULT_DOWNLOAD_DIR}
+
+
+@app.get("/api/cookie-status")
+def get_cookie_status():
+    has_cookies = os.path.exists(COOKIE_FILE_PATH) and os.path.getsize(COOKIE_FILE_PATH) > 0
+    return {"has_cookie_file": has_cookies, "path": COOKIE_FILE_PATH}
+
+
+@app.post("/api/upload-cookies")
+async def upload_cookies(file: UploadFile = File(...)):
+    try:
+        content = await file.read()
+        with open(COOKIE_FILE_PATH, "wb") as f:
+            f.write(content)
+        return {"status": "success", "message": "cookies.txt uploaded successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/api/browse-folder")
@@ -134,7 +154,8 @@ def start_download(req: DownloadRequest):
         urls=req.urls,
         format_type=req.format_type,
         quality=req.quality,
-        output_folder=folder
+        output_folder=folder,
+        browser_cookies=req.browser_cookies or "none"
     )
     return {"status": "started", "count": len(task_ids), "task_ids": task_ids}
 
